@@ -5,14 +5,16 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'prettier/@typescript-eslint',
     'plugin:prettier/recommended',
+    'plugin:jest/recommended',
   ],
   settings: {},
   env: {
     browser: true,
     node: true,
     es2017: true,
+    'jest/globals': true,
   },
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint', 'prettier', 'jest'],
   parserOptions: {
     sourceType: 'module', // Allows for the use of imports
   },

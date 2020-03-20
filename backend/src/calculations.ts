@@ -1,4 +1,4 @@
-type MonthlyPaymentParameters = {
+export type MonthlyPaymentParameters = {
   value: number;
   downPayment: number;
   rate: number;
@@ -7,7 +7,7 @@ type MonthlyPaymentParameters = {
 
 const MONTHS_IN_YEAR = 12;
 
-const calculateMonthlyPayment = ({
+export const calculateMonthlyPayment = ({
   value,
   downPayment,
   rate,
@@ -23,5 +23,3 @@ const calculateMonthlyPayment = ({
   const monthlyPayment = Math.round(monthlyPaymentRaw * 100) / 100;
   return monthlyPayment;
 };
-
-export { calculateMonthlyPayment, MonthlyPaymentParameters };
