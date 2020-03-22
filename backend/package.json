@@ -9,7 +9,7 @@
     "lint:fix": "npm run lint -- --fix",
     "type-check": "tsc --noEmit",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
-    "build": "npm run lint:fix && tsc",
+    "build": "npm run lint:fix && tsc --project tsconfig.build.json",
     "start": "node dist/index.js"
   },
   "author": "",
