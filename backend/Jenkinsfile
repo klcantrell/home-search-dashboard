@@ -21,6 +21,24 @@ pipeline {
         }
     }
     post {
+        success {
+            withCredentials([string(credentialsId: 'githubToken', variable: 'TOKEN')]) {
+                sh 'curl "https://api.GitHub.com/repos/klcantrell/home-search-dashboard/statuses/$GIT_COMMIT" \
+                -H "Authorization: token $TOKEN" \
+                -H "Content-Type: application/json" \
+                -X POST \
+                -d "{\\"state\\": \\"success\\",\\"context\\": \\"continuous-integration/jenkins\\", \\"description\\": \\"Build succeeded\\", \\"target_url\\": \\"https://127.0.0.1:8080/job/test-job/$BUILD_NUMBER/console\\"}"'
+            }
+        }
+        failure {
+            withCredentials([string(credentialsId: 'githubToken', variable: 'TOKEN')]) {
+                sh 'curl "https://api.GitHub.com/repos/klcantrell/home-search-dashboard/statuses/$GIT_COMMIT" \
+                -H "Authorization: token $TOKEN" \
+                -H "Content-Type: application/json" \
+                -X POST \
+                -d "{\\"state\\": \\"failure\\",\\"context\\": \\"continuous-integration/jenkins\\", \\"description\\": \\"Build failed\\", \\"target_url\\": \\"https://127.0.0.1:8080/job/test-job/$BUILD_NUMBER/console\\"}"'
+            }
+        }
         always { 
             cleanWs()
         }
