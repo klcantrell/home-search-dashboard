@@ -9,6 +9,11 @@ pipeline {
       CI = 'true' 
     }
     stages {
+        stage('Dependencies') {
+            steps {
+                sh 'apk --no-cache add curl'
+            }
+        }
         stage('Build') {
             steps {
                 sh 'cd backend && npm install'
@@ -21,6 +26,22 @@ pipeline {
         }
     }
     post {
+        success {
+            withCredentials([string(credentialsId: 'githubToken', variable: 'TOKEN')]) {
+                sh '''
+                curl -H "Token: $TOKEN" https://some.api/
+                '''
+            }
+        }
+        failure {
+            withCredentials([string(credentialsId: 'githubToken', variable: 'TOKEN')]) {
+                sh 'curl "https://api.GitHub.com/repos/klcantrell/home-search-dashboard/statuses/$GIT_COMMIT" \
+                -H "Authorization: token $TOKEN" \
+                -H "Content-Type: application/json" \
+                -X POST \
+                -d "{\\"state\\": \\"failure\\",\\"context\\": \\"continuous-integration/jenkins\\", \\"description\\": \\"Jenkins\\", \\"target_url\\": \\"https://someurl.com/job/test-job/$BUILD_NUMBER/console\\"}"'
+            }
+        }
         always { 
             cleanWs()
         }
