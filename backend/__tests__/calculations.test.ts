@@ -8,5 +8,5 @@ it('calculates monthly mortgage according to the amortization equation', () => {
 
   const result = calculateMonthlyPayment({ value, downPayment, rate, term });
 
-  expect(result).toBe(1369.25);
+  expect(result).toBe(1369);
 });
