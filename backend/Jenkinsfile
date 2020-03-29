@@ -1,7 +1,7 @@
 pipeline {
     agent {
-        dockerfile {
-            dir 'backend'
+        docker {
+            image 'node:12.16.1-alpine3.9'
             args '-p 3000:3000'
         }
     }
@@ -22,22 +22,28 @@ pipeline {
     }
     post {
         success {
-            withCredentials([string(credentialsId: 'githubToken', variable: 'TOKEN')]) {
-                sh 'curl "https://api.GitHub.com/repos/klcantrell/home-search-dashboard/statuses/$GIT_COMMIT" \
-                -H "Authorization: token $TOKEN" \
-                -H "Content-Type: application/json" \
-                -X POST \
-                -d "{\\"state\\": \\"success\\",\\"context\\": \\"continuous-integration/jenkins\\", \\"description\\": \\"Build succeeded\\", \\"target_url\\": \\"http://ec2-18-220-234-212.us-east-2.compute.amazonaws.com:8080/job/home-search-dashboard_build/$BUILD_NUMBER/console\\"}"'
-            }
+            githubNotify(
+                status: 'SUCCESS', 
+                context: 'continuous-integration/jenkins',
+                repo: 'home-search-dashboard',
+                account: 'klcantrell',
+                sha: "$GIT_COMMIT",
+                description: 'Build succeeded', 
+                targetUrl: "http://ec2-18-220-234-212.us-east-2.compute.amazonaws.com:8080/job/home-search-dashboard_build/$BUILD_NUMBER/console",
+                credentialsId: 'githubToken'
+            )
         }
         failure {
-            withCredentials([string(credentialsId: 'githubToken', variable: 'TOKEN')]) {
-                sh 'curl "https://api.GitHub.com/repos/klcantrell/home-search-dashboard/statuses/$GIT_COMMIT" \
-                -H "Authorization: token $TOKEN" \
-                -H "Content-Type: application/json" \
-                -X POST \
-                -d "{\\"state\\": \\"failure\\",\\"context\\": \\"continuous-integration/jenkins\\", \\"description\\": \\"Build failed\\", \\"target_url\\": \\"http://ec2-18-220-234-212.us-east-2.compute.amazonaws.com:8080/job/home-search-dashboard_build/$BUILD_NUMBER/console\\"}"'
-            }
+            githubNotify(
+                status: 'FAILURE', 
+                context: 'continuous-integration/jenkins',
+                repo: 'home-search-dashboard',
+                account: 'klcantrell',
+                sha: "$GIT_COMMIT",
+                description: 'Build failed', 
+                targetUrl: "http://ec2-18-220-234-212.us-east-2.compute.amazonaws.com:8080/job/home-search-dashboard_build/$BUILD_NUMBER/console",
+                credentialsId: 'githubToken'
+            )
         }
         always { 
             cleanWs()
