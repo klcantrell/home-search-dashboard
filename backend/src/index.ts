@@ -14,6 +14,10 @@ type HouseResponseBody = {
   monthlyPayment: number;
 };
 
+app.get('/health', (_, res) => {
+  res.send(200);
+});
+
 app.post('/house', (req, res) => {
   const { value, downPayment, rate, term } = req.body as HouseRequestBody;
 
