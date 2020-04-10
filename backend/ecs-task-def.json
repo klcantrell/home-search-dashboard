@@ -1,0 +1,32 @@
+{
+  "executionRoleArn": "arn:aws:iam::815742652454:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/home-search-dashboard-task",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "portMappings": [
+        {
+          "hostPort": 3000,
+          "protocol": "tcp",
+          "containerPort": 3000
+        }
+      ],
+      "cpu": 0,
+      "image": "815742652454.dkr.ecr.us-east-2.amazonaws.com/home-search-dashboard:{{ version }}",
+      "name": "custom"
+    }
+  ],
+  "placementConstraints": [],
+  "memory": "512",
+  "family": "home-search-dashboard-task",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "volumes": []
+}

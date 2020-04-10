@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "Resources": [
+    {
+      "TargetService": {
+        "Type": "AWS::ECS::Service",
+        "Properties": {
+          "TaskDefinition": "arn:aws:ecs:us-east-2:815742652454:task-definition/home-search-dashboard-task:{{ revision }}",
+          "LoadBalancerInfo": {
+            "ContainerName": "custom",
+            "ContainerPort": 3000
+          }
+        }
+      }
+    }
+  ]
+}
