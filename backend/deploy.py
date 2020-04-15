@@ -1,51 +1,46 @@
 import json
-import hashlib
-import boto3
+import argparse
+import subprocess
+import docker
 from jinja2 import Environment, FileSystemLoader
 
+ECR_REGISTRY = '815742652454.dkr.ecr.us-east-2.amazonaws.com/home-search-dashboard'
+
+# RECEIVE COMMAND LINE ARGUMENT
+parser = argparse.ArgumentParser()
+parser.add_argument('--version', '-v', type=str)
+args = parser.parse_args()
+
+# GET AWS ECR PASSWORD
+ecr_password = subprocess.run(['aws', 'ecr', 'get-login-password', '--region', 'us-east-2'],
+                              stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+# BUILD AND UPLOAD DOCKER IMAGE
+docker_client = docker.from_env()
+print('Docker client created')
+
+docker_image, _ = docker_client.images.build(
+    tag='home-search-dashboard', path='.')
+print('Docker image created: ', docker_image)
+
+docker_tag = docker_image.tag(
+    ECR_REGISTRY, tag=args.version)
+print('Docker image tagged: ', docker_tag)
+
+docker_login = docker_client.login(username='AWS', password=ecr_password,
+                                   registry=ECR_REGISTRY)
+print('Response from docker login: ', docker_login)
+
+for docker_push_line in docker_client.images.push(ECR_REGISTRY, tag=args.version, stream=True, decode=True):
+    print(docker_push_line)
+
+# CREATE TASK DEF FILE
 jinja_env = Environment(
     loader=FileSystemLoader('./')
 )
 
-# CREATE TASK DEFINITION
-ecs = boto3.client('ecs')
-
 task_def_template = jinja_env.get_template('ecs-task-def.json')
+ecs_task_def = task_def_template.render(version=args.version)
 
-ecs_task_def = task_def_template.render(version='latest')
-ecs_task_def = json.loads(ecs_task_def)
-
-ecs_response = ecs.register_task_definition(
-    family=ecs_task_def['family'],
-    executionRoleArn=ecs_task_def['executionRoleArn'],
-    containerDefinitions=ecs_task_def['containerDefinitions'],
-    placementConstraints=ecs_task_def['placementConstraints'],
-    memory=ecs_task_def['memory'],
-    requiresCompatibilities=ecs_task_def['requiresCompatibilities'],
-    networkMode=ecs_task_def['networkMode'],
-    cpu=ecs_task_def['cpu'],
-    volumes=ecs_task_def['volumes']
-)
-
-revision = ecs_response['taskDefinition']['revision']
-print(f'ECS revision: {revision}')
-
-# CREATE DEPLOYMENT
-code_deploy = boto3.client('codedeploy')
-
-app_spec_template = jinja_env.get_template('app-spec.json')
-
-app_spec = app_spec_template.render(revision=revision)
-
-code_deploy_response = code_deploy.create_deployment(
-    applicationName='AppECS-home-search-dashboard-home-search-dashboard-service',
-    deploymentGroupName='DgpECS-home-search-dashboard-home-search-dashboard-service',
-    revision={
-        'revisionType': 'AppSpecContent',
-        'appSpecContent': {
-            'content': app_spec,
-            'sha256': hashlib.sha256(app_spec.encode()).hexdigest()
-        }
-    }
-)
-print(f'Code deploy response: {code_deploy_response}')
+with open(f'ecs-task-def-{args.version}.json', 'w') as f:
+    f.write(ecs_task_def)
