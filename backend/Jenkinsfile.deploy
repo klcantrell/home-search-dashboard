@@ -1,0 +1,62 @@
+def docker_image = ""
+def docker_image_tag = "815742652454.dkr.ecr.us-east-2.amazonaws.com\\/home-search-dashboard:${BUILD_NUMBER}"
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+          steps {
+            script {
+              docker_image = docker.build(docker_image_tag, "./backend")
+            }
+          }
+        }
+        stage('Push') {
+          steps {
+            withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
+              sh """
+                set +x
+                ${ecrLogin()}
+                set -x
+              """
+            }
+            script {
+              docker_image.push()
+            }
+          }
+        }
+        stage('Create task definition') {
+          steps {
+            sh """
+              cd backend
+              sed 's/{{image}}/${docker_image_tag}/' ecs-task-def.json > ecs-task-def-gen.json
+            """
+          }
+        }
+        stage('Deploy') {
+          steps {
+            withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
+              sh """
+                set +x
+                docker run \
+                  -w /usr/src/home-search-dashboard \
+                  -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+                  -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+                  -v \$(pwd):/usr/src/home-search-dashboard \
+                  --rm amazon/aws-cli:2.0.8 \
+                    ecs deploy \
+                    --task-definition ./backend/ecs-task-def-gen.json \
+                    --service home-search-dashboard-service \
+                    --cluster home-search-dashboard \
+                    --codedeploy-appspec ./backend/app-spec.json
+                set -x
+              """
+            }
+          }
+        }
+    }
+    post {
+        always { 
+            cleanWs()
+        }
+    }
+}

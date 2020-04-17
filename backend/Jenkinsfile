@@ -29,7 +29,7 @@ pipeline {
                 account: 'klcantrell',
                 sha: "$GIT_COMMIT",
                 description: 'Build succeeded', 
-                targetUrl: "http://ec2-18-220-234-212.us-east-2.compute.amazonaws.com:8080/job/home-search-dashboard_build/$BUILD_NUMBER/console",
+                targetUrl: "http://ec2-18-224-149-165.us-east-2.compute.amazonaws.com:8080//job/home-search-dashboard_build/$BUILD_NUMBER/console",
                 credentialsId: 'githubToken'
             )
         }
@@ -41,7 +41,7 @@ pipeline {
                 account: 'klcantrell',
                 sha: "$GIT_COMMIT",
                 description: 'Build failed', 
-                targetUrl: "http://ec2-18-220-234-212.us-east-2.compute.amazonaws.com:8080/job/home-search-dashboard_build/$BUILD_NUMBER/console",
+                targetUrl: "http://ec2-18-224-149-165.us-east-2.compute.amazonaws.com:8080//job/home-search-dashboard_build/$BUILD_NUMBER/console",
                 credentialsId: 'githubToken'
             )
         }
