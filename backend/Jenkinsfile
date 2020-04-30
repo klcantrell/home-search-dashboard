@@ -9,14 +9,9 @@ pipeline {
       CI = 'true' 
     }
     stages {
-        stage('Build') {
+        stage('Test AWS CLI') {
             steps {
-                sh 'cd backend && npm install'
-            }
-        }
-        stage('Test') {
-            steps {
-                sh 'cd backend && npm test'
+                sh 'aws --version'
             }
         }
     }
