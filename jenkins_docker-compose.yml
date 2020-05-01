@@ -19,6 +19,9 @@ services:
     image: 'docker:19.03.8-dind'
   jenkins-ci:
     container_name: jenkins-ci
+    build:
+      context: .
+      dockerfile: Jenkins.Dockerfile
     networks:
       - jenkins
     environment:
@@ -31,8 +34,6 @@ services:
       - '$HOME:/home'
     ports:
       - '8080:8080'
-    image: 'jenkinsci/blueocean:1.23.0-bcc31d32159f'
-
 volumes:
   jenkins-docker-certs:
     name: jenkins-docker-certs
