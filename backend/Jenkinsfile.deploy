@@ -55,6 +55,15 @@ pipeline {
         }
     }
     post {
+        success {
+          withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
+            sh """aws sns publish \
+              --message 'Deploy Succeeded!' \
+              --phone-number +1-808-349-1117 \
+              --region us-east-1
+            """
+          }
+        }
         always { 
             cleanWs()
         }
