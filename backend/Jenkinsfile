@@ -1,20 +1,27 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:12.16.1-alpine3.9'
-            args '-p 3000:3000'
-        }
-    }
+    agent any
     environment {
       CI = 'true' 
     }
     stages {
         stage('Build') {
+            agent {
+                docker {
+                    image 'node:12.16.1-alpine3.9'
+                    args '-p 3000:3000'
+                }
+            }
             steps {
                 sh 'cd backend && npm install'
             }
         }
         stage('Test') {
+            agent {
+                docker {
+                    image 'node:12.16.1-alpine3.9'
+                    args '-p 3000:3000'
+                }
+            }
             steps {
                 sh 'cd backend && npm test'
             }
@@ -22,28 +29,22 @@ pipeline {
     }
     post {
         success {
-            githubNotify(
-                status: 'SUCCESS', 
-                context: 'continuous-integration/jenkins',
-                repo: 'home-search-dashboard',
-                account: 'klcantrell',
-                sha: "$GIT_COMMIT",
-                description: 'Build succeeded', 
-                targetUrl: "http://ec2-18-224-149-165.us-east-2.compute.amazonaws.com:8080//job/home-search-dashboard_build/$BUILD_NUMBER/console",
-                credentialsId: 'githubToken'
-            )
+            withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
+                sh """aws sns publish \
+                --message 'Home search dashboard tests succeeded!' \
+                --phone-number +1-808-349-1117 \
+                --region us-east-1
+                """
+            }
         }
         failure {
-            githubNotify(
-                status: 'FAILURE', 
-                context: 'continuous-integration/jenkins',
-                repo: 'home-search-dashboard',
-                account: 'klcantrell',
-                sha: "$GIT_COMMIT",
-                description: 'Build failed', 
-                targetUrl: "http://ec2-18-224-149-165.us-east-2.compute.amazonaws.com:8080//job/home-search-dashboard_build/$BUILD_NUMBER/console",
-                credentialsId: 'githubToken'
-            )
+            withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
+                sh """aws sns publish \
+                --message 'Home search dashboard tests failed!' \
+                --phone-number +1-808-349-1117 \
+                --region us-east-1
+                """
+            }
         }
         always { 
             cleanWs()
