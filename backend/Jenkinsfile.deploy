@@ -1,5 +1,5 @@
 def docker_image = ""
-def docker_image_tag = "815742652454.dkr.ecr.us-east-2.amazonaws.com\\/home-search-dashboard:${BUILD_NUMBER}"
+def docker_image_tag = "108929348570.dkr.ecr.us-east-2.amazonaws.com\\/home-search-dashboard:${BUILD_NUMBER}"
 pipeline {
     agent any
     stages {

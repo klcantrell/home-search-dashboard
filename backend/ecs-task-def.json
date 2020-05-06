@@ -1,11 +1,11 @@
 {
-  "executionRoleArn": "arn:aws:iam::815742652454:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::108929348570:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/home-search-dashboard-task",
+          "awslogs-group": "/ecs/home-search-dashboard",
           "awslogs-region": "us-east-2",
           "awslogs-stream-prefix": "ecs"
         }
@@ -24,7 +24,7 @@
   ],
   "placementConstraints": [],
   "memory": "512",
-  "family": "home-search-dashboard-task",
+  "family": "home-search-dashboard",
   "requiresCompatibilities": ["FARGATE"],
   "networkMode": "awsvpc",
   "cpu": "256",
