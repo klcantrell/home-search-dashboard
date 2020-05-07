@@ -12,13 +12,11 @@ pipeline {
         }
         stage('Push') {
           steps {
-            withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
-              sh """
-                set +x
-                ${ecrLogin()}
-                set -x
-              """
-            }
+            sh """
+              set +x
+              ${ecrLogin()}
+              set -x
+            """
             script {
               docker_image.push()
             }
@@ -34,35 +32,24 @@ pipeline {
         }
         stage('Deploy') {
           steps {
-            withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
-              sh """
-                set +x
-                docker run \
-                  -w /usr/src/home-search-dashboard \
-                  -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
-                  -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
-                  -v \$(pwd):/usr/src/home-search-dashboard \
-                  --rm amazon/aws-cli:2.0.8 \
-                    ecs deploy \
-                    --task-definition ./backend/ecs-task-def-gen.json \
-                    --service home-search-dashboard-service \
-                    --cluster home-search-dashboard \
-                    --codedeploy-appspec ./backend/app-spec.json
-                set -x
-              """
-            }
+            sh """
+              aws ecs deploy \
+                --task-definition ./backend/ecs-task-def-gen.json \
+                --service home-search-dashboard \
+                --cluster home-search-dashboard \
+                --codedeploy-appspec ./backend/app-spec.json \
+                --region us-east-2
+            """
           }
         }
     }
     post {
         success {
-          withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
-            sh """aws sns publish \
-              --message 'Deploy Succeeded!' \
-              --phone-number +1-808-349-1117 \
-              --region us-east-1
-            """
-          }
+          sh """aws sns publish \
+            --message 'Deploy Succeeded!' \
+            --phone-number +1-808-349-1117 \
+            --region us-east-1
+          """
         }
         always { 
             cleanWs()
